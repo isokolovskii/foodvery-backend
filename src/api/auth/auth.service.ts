@@ -1,9 +1,10 @@
-import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import { HttpException, Inject, Injectable } from '@nestjs/common';
 import { UserService } from '../user/user.service';
 import { JwtService } from '@nestjs/jwt';
-import type { AuthDto } from './auth.dto';
 import type { JwtPayload } from './jwt.payload';
 import { User } from '../user/user.entity';
+import { genSalt, hash } from 'bcrypt';
+import { CreateUserDto } from './create-user.dto';
 
 @Injectable()
 export class AuthService {
@@ -12,17 +13,30 @@ export class AuthService {
   @Inject(JwtService)
   private readonly jwtService: JwtService;
 
-  async validateUser({ email, password }: AuthDto) {
-    const user = await this.userService.findByEmail(email);
-    if (user && user.password === password) {
-      delete user.password;
-      return user;
-    }
-    return null;
-  }
-
   login = async (user: User) => {
     const payload: JwtPayload = { email: user.email, uuid: user.uuid };
-    return this.jwtService.sign(payload);
+    delete user.password;
+    return { token: this.jwtService.sign(payload), user };
+  };
+
+  register = async (dto: CreateUserDto) => {
+    const existingUser = await this.userService.findByEmail(dto.email);
+
+    if (existingUser) {
+      throw new HttpException(
+        { message: 'User with specified email already exists' },
+        400,
+      );
+    }
+
+    const salf = await genSalt(10);
+
+    const user = await this.userService.create({
+      name: dto.name,
+      email: dto.email,
+      password: await hash(dto.password, salf),
+    });
+
+    return await this.login(user);
   };
 }
