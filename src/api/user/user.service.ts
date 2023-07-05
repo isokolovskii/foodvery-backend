@@ -16,6 +16,12 @@ export class UserService {
     });
   };
 
+  findByEmail = async (email: string): Promise<User | null> => {
+    return await this.userRepository.findOne({
+      where: { email },
+    });
+  };
+
   create = async ({
     name,
     password,

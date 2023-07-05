@@ -8,7 +8,11 @@ export class UserController {
   private readonly userService: UserService;
 
   @Get(':id')
-  public getUser(@Param('id', ParseUUIDPipe) uuid: string): Promise<User> {
-    return this.userService.findOne(uuid);
+  public async getUser(
+    @Param('id', ParseUUIDPipe) uuid: string,
+  ): Promise<Omit<User, 'password'>> {
+    const user = await this.userService.findOne(uuid);
+    delete user.password;
+    return user;
   }
 }
