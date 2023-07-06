@@ -12,15 +12,6 @@ export class MailerConfigService implements MailerOptionsFactory {
   private readonly configService: ConfigService;
 
   createMailerOptions(): MailerOptions {
-    console.log(
-      this.configService.get('SMTP_HOST'),
-      this.configService.get('SMTP_PORT'),
-      this.configService.get('SMTP_USER'),
-      this.configService.get('SMTP_PASS'),
-      this.configService.get<boolean>('SMTP_SECURE'),
-      this.configService.get('SMTP_FROM'),
-    );
-
     return {
       transport: {
         host: this.configService.get<string>('SMTP_HOST'),
