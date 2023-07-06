@@ -98,12 +98,4 @@ export class AuthService {
   logout = async (user: UserEntity, session: SessionEntity) => {
     await this.refreshTokenService.removeSession(user, session.uuid);
   };
-
-  removeSession = async (user: UserEntity, dto: RemoveSessionDto) => {
-    return await this.refreshTokenService.removeSession(user, dto.session);
-  };
-
-  removeAllSessions = async (user: UserEntity, session: SessionEntity) => {
-    return await this.refreshTokenService.removeAllSessions(user, session);
-  };
 }

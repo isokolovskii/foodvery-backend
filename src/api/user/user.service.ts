@@ -5,6 +5,8 @@ import type { Repository } from 'typeorm';
 import { v4 as uuid } from 'uuid';
 import { CreateUserDto } from '../auth/create-user.dto';
 import { RefreshTokenService } from '../auth/refresh-token/refresh-token.service';
+import { RemoveSessionDto } from '../auth/dtos/remove-session.dto';
+import { SessionEntity } from '../auth/refresh-token/session.entity';
 
 @Injectable()
 export class UserService {
@@ -40,5 +42,13 @@ export class UserService {
       relations: { sessions: true },
     });
     return sessions;
+  };
+
+  removeSession = async (user: UserEntity, dto: RemoveSessionDto) => {
+    return await this.refreshTokenService.removeSession(user, dto.session);
+  };
+
+  removeAllSessions = async (user: UserEntity, session: SessionEntity) => {
+    return await this.refreshTokenService.removeAllSessions(user, session);
   };
 }
