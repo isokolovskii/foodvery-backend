@@ -20,6 +20,9 @@ export class UserEntity {
   @Column({ type: 'varchar', length: 120, unique: true })
   public email!: string;
 
+  @Column({ type: 'boolean', default: false })
+  public emailConfirmed: boolean;
+
   @Exclude()
   @Column({ type: 'varchar', length: 120 })
   public password!: string;

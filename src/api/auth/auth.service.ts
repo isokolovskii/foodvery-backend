@@ -69,6 +69,8 @@ export class AuthService {
       password: await hash(dto.password, salf),
     });
 
+    await this.userService.sendConfirmEmail(user);
+
     return await this.login(user, userAgent);
   };
 
