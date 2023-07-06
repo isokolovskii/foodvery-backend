@@ -1,22 +1,25 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User } from './user.entity';
+import { UserEntity } from './user.entity';
 import type { Repository } from 'typeorm';
 import { v4 as uuid } from 'uuid';
 import { CreateUserDto } from '../auth/create-user.dto';
+import { RefreshTokenService } from '../auth/refresh-token/refresh-token.service';
 
 @Injectable()
 export class UserService {
-  @InjectRepository(User)
-  private readonly userRepository: Repository<User>;
+  @InjectRepository(UserEntity)
+  private readonly userRepository: Repository<UserEntity>;
+  @Inject(RefreshTokenService)
+  private readonly refreshTokenService: RefreshTokenService;
 
-  findOne = async (uuid: string): Promise<User | null> => {
+  findOne = async (uuid: string): Promise<UserEntity | null> => {
     return await this.userRepository.findOne({
       where: { uuid },
     });
   };
 
-  findByEmail = async (email: string): Promise<User | null> => {
+  findByEmail = async (email: string): Promise<UserEntity | null> => {
     return await this.userRepository.findOne({
       where: { email },
     });
@@ -29,5 +32,13 @@ export class UserService {
     user.email = email;
     user.password = password;
     return await this.userRepository.save(user);
+  };
+
+  sessions = async (user: UserEntity) => {
+    const { sessions } = await this.userRepository.findOne({
+      where: { uuid: user.uuid },
+      relations: { sessions: true },
+    });
+    return sessions;
   };
 }

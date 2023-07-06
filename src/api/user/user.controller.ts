@@ -1,8 +1,15 @@
-import { Controller, Get, Inject, Request, UseGuards } from '@nestjs/common';
+import {
+  ClassSerializerInterceptor,
+  Controller,
+  Get,
+  Inject,
+  Req,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
 import { UserService } from './user.service';
+import type { JwtValidatedDto } from '../auth/dtos/jwt-validated.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import type { JwtPayload } from '../auth/jwt.payload';
-import { NotFoundError } from 'rxjs';
 
 @Controller('user')
 export class UserController {
@@ -10,15 +17,17 @@ export class UserController {
   private readonly userService: UserService;
 
   @UseGuards(JwtAuthGuard)
+  @UseInterceptors(ClassSerializerInterceptor)
   @Get()
-  public async getUser(@Request() req: { user: JwtPayload }) {
-    const user = await this.userService.findOne(req.user.uuid);
-    if (!user) {
-      throw new NotFoundError('User not found');
-    }
-
-    delete user.password;
-
-    return user;
+  public async getUser(@Req() req: { user: JwtValidatedDto }) {
+    return req.user.user;
   }
+
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(ClassSerializerInterceptor)
+  @Get('sessions')
+  public async getSessions(@Req() req: { user: JwtValidatedDto }) {
+    return this.userService.sessions(req.user.user);
+  }
+  a;
 }

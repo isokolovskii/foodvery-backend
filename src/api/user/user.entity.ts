@@ -4,21 +4,25 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   PrimaryColumn,
+  OneToMany,
 } from 'typeorm';
+import { Exclude } from 'class-transformer';
+import { SessionEntity } from '../auth/refresh-token/session.entity';
 
-@Entity()
-export class User {
+@Entity({ name: 'users' })
+export class UserEntity {
   @PrimaryColumn({ unique: true })
   public uuid!: string;
 
   @Column({ type: 'varchar', length: 120 })
-  public name: string;
+  public name!: string;
 
   @Column({ type: 'varchar', length: 120, unique: true })
-  public email: string;
+  public email!: string;
 
+  @Exclude()
   @Column({ type: 'varchar', length: 120 })
-  public password: string;
+  public password!: string;
 
   @Column({ type: 'boolean', default: false })
   public isDeleted: boolean;
@@ -28,4 +32,7 @@ export class User {
 
   @UpdateDateColumn({ type: 'timestamp' })
   public updatedAt!: Date;
+
+  @OneToMany(() => SessionEntity, (session) => session.user)
+  public sessions!: [SessionEntity];
 }
