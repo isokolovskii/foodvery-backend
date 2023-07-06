@@ -16,7 +16,10 @@ const envFilePath: string = getEnvPath(`${__dirname}/common/envs`);
     ConfigModule.forRoot({ envFilePath, isGlobal: true }),
     TypeOrmModule.forRootAsync({ useClass: TypeOrmConfigService }),
     EventEmitterModule.forRoot(),
-    CacheModule.registerAsync({ useClass: CacheManagerService }),
+    CacheModule.registerAsync({
+      useClass: CacheManagerService,
+      isGlobal: true,
+    }),
     ApiModule,
     MailModule,
   ],

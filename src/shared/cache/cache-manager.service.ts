@@ -13,7 +13,6 @@ export class CacheManagerService implements CacheOptionsFactory {
 
   createCacheOptions = (): CacheModuleOptions<RedisClientOptions> => {
     return {
-      isGlobal: true,
       store: redisStore,
       host: this.configService.get<string>('REDIS_HOST'),
       port: this.configService.get<number>('REDIS_PORT'),
