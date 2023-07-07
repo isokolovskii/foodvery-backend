@@ -2,14 +2,16 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { getEnvPath } from './common/helper/env.helper';
-import { TypeOrmConfigService } from './shared/typeorm/typeorm.service';
 import { ApiModule } from './api/api.module';
 import { MailModule } from './mail/mail.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { CacheModule } from '@nestjs/cache-manager';
-import { CacheManagerService } from './shared/cache/cache-manager.service';
+import { CacheManagerConfigService } from './shared/cache/cache-manager-config.service';
 import { LoggerModule } from 'nestjs-pino';
-import { v4 as uuid } from 'uuid';
+import { BullModule } from '@nestjs/bull';
+import { BullConfigService } from './shared/bull/bull-config.service';
+import { TypeOrmConfigService } from './shared/typeorm/typeorm-config.service';
+import { AuthorizedDto } from './api/auth/dto';
 
 const envFilePath: string = getEnvPath(`${__dirname}/common/envs`);
 
@@ -17,16 +19,19 @@ const envFilePath: string = getEnvPath(`${__dirname}/common/envs`);
   imports: [
     LoggerModule.forRoot({
       pinoHttp: {
-        customProps: () => {
+        customProps: (req) => {
+          const { user } = req as { user?: AuthorizedDto };
+
           return {
             context: 'HTTP',
-            requestUuid: uuid(),
+            userUUID: user?.user?.uuid,
+            accessUUID: user?.session?.uuid,
           };
         },
         transport: {
           target: 'pino-pretty',
           options: {
-            singleLine: true,
+            colorize: true,
           },
         },
       },
@@ -34,8 +39,9 @@ const envFilePath: string = getEnvPath(`${__dirname}/common/envs`);
     ConfigModule.forRoot({ envFilePath, isGlobal: true }),
     TypeOrmModule.forRootAsync({ useClass: TypeOrmConfigService }),
     EventEmitterModule.forRoot(),
+    BullModule.forRootAsync({ useClass: BullConfigService }),
     CacheModule.registerAsync({
-      useClass: CacheManagerService,
+      useClass: CacheManagerConfigService,
       isGlobal: true,
     }),
     ApiModule,

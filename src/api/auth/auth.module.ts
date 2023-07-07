@@ -1,22 +1,36 @@
 import { Module } from '@nestjs/common';
-import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
-import { UserModule } from '../user/user.module';
-import { AuthService } from './auth.service';
-import { AuthController } from './auth.controller';
-import { JwtConfigService } from './jwt.service';
-import { LocalStrategy } from './local.strategy';
-import { JwtStrategy } from './jwt.strategy';
-import { RefreshTokenModule } from './refresh-token/refresh-token.module';
+import {
+  AccessService,
+  AuthService,
+  EmailConfirmationService,
+  PasswordService,
+  JwtConfigService,
+} from './services';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { UserEntity, AccessEntity } from './entities';
+import { BullModule } from '@nestjs/bull';
+import { AuthController } from './controllers';
+import { PassportModule } from '@nestjs/passport';
+import { JwtExpiredStrategy, JwtStrategy } from './strategies';
 
 @Module({
   imports: [
-    UserModule,
+    TypeOrmModule.forFeature([UserEntity, AccessEntity]),
     JwtModule.registerAsync({ useClass: JwtConfigService }),
+    BullModule.registerQueue({
+      name: 'mailer',
+    }),
     PassportModule,
-    RefreshTokenModule,
   ],
-  providers: [AuthService, LocalStrategy, JwtStrategy],
+  providers: [
+    AuthService,
+    PasswordService,
+    EmailConfirmationService,
+    AccessService,
+    JwtStrategy,
+    JwtExpiredStrategy,
+  ],
   controllers: [AuthController],
 })
 export class AuthModule {}

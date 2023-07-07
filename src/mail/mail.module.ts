@@ -1,10 +1,16 @@
 import { Module } from '@nestjs/common';
 import { MailerModule } from '@nestjs-modules/mailer';
-import { MailerConfigService } from './mailer.config';
-import { MailService } from './mail.service';
+import { MailProcessor } from './processors';
+import { MailerConfigService } from './services';
+import { BullModule } from '@nestjs/bull';
 
 @Module({
-  imports: [MailerModule.forRootAsync({ useClass: MailerConfigService })],
-  providers: [MailService],
+  imports: [
+    MailerModule.forRootAsync({ useClass: MailerConfigService }),
+    BullModule.registerQueue({
+      name: 'mailer',
+    }),
+  ],
+  providers: [MailProcessor],
 })
 export class MailModule {}
